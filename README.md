@@ -6,11 +6,13 @@ implementation is for testing the
 [Betaflight](https://github.com/betaflight/betaflight) flight controller in
 [Gazebo](http://gazebosim.org/).
 
+![Betaloop](https://raw.githubusercontent.com/Aeroloop/betaloop/master/images/screenshot.png)
 # Requirements
 
 1. Gazebo 8 
 2. [Aeroloop Gazebo resources](https://github.com/Aeroloop/aeroloop_gazebo)
-2. Betaflight compiled for SITL
+2. [Betaflight](https://github.com/betaflight/betaflight) [compiled for
+   SITL](https://github.com/betaflight/betaflight/tree/master/src/main/target/SITL)
 3. Python3
 4. [VidRecv](https://github.com/Aeroloop/vidrecv)
 5. [MSP virtual radio](https://github.com/Aeroloop/msp_virtualradio) 
