@@ -1,12 +1,19 @@
 # Betaloop
 
-Betaloop is collection of programs and scripts with the goal to provide accurate
-and realistic hardware/software in the loop testing for UAVs. This specific
+Betaloop is a flight simulator with the  goal of providing accurate
+and realistic flight performance primarily to be used in hardware/software in the loop testing for UAVs. This specific
 implementation is for testing the
 [Betaflight](https://github.com/betaflight/betaflight) flight controller in
-[Gazebo](http://gazebosim.org/).
-
+[Gazebo](http://gazebosim.org/). 
 ![Betaloop](https://raw.githubusercontent.com/Aeroloop/betaloop/master/images/screenshot.png)
+
+collection of programs and scripts with the
+# Features
+
+1. Uses real flight control firmware (Betaflight)  
+2. Supports first person view (FPV) flight
+3. Use your own radio controller!  
+
 # Requirements
 
 1. Gazebo 8 
