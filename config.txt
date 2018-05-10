@@ -1,0 +1,7 @@
+[Betaloop]
+BetaflightElf =
+Vidrecv = 
+AeroloopGazeboHome = ../
+MspVirtualRadioHome = ../
+World = betaloop_iris_arducopter_demo.world 
+
