@@ -59,8 +59,6 @@ class Betaloop:
         models = os.path.join(self.gz_assets, "models")
         plugins = os.path.join(self.gz_assets, "plugins", "build")
         worlds = os.path.join(self.gz_assets, "worlds")
-        print ("world=", worlds)
-        print ("models=", models)
         os.environ["GAZEBO_MODEL_PATH"] = "{}:{}".format(models, os.environ["GAZEBO_MODEL_PATH"])
         os.environ["GAZEBO_RESOURCE_PATH"] = "{}:{}".format(worlds, os.environ["GAZEBO_RESOURCE_PATH"])
         os.environ["GAZEBO_PLUGIN_PATH"] = "{}:{}".format(plugins, os.environ["GAZEBO_PLUGIN_PATH"])
@@ -84,11 +82,15 @@ class Betaloop:
                 raise Execption("Process start timeout")
             rc = p.poll()
 
-    def start_gazebo(self, world):
+    def start_gazebo(self, world, show_gzclient):
         self.load_gazebo_vars()
         #self._start_and_block_until(["gzserver", "--verbose", world], "Connected to gazebo master")
-
-        p = subprocess.Popen(["gzserver", "--verbose", world], shell=False)
+        exe = None
+        if show_gzclient:
+            exe = "gazebo"
+        else:
+            exe = "gzserver"
+        p = subprocess.Popen([exe, "--verbose", world], shell=False)
         #                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
         self.pids.append(p.pid)
         time.sleep(10)
@@ -119,10 +121,10 @@ class Betaloop:
         self.pids.append(p.pid)
 
 
-    def start(self, world, elf, transmitter, vidrecv):
+    def start(self, world, elf, transmitter, vidrecv, show_gzclient):
         # Block until connected
         logger.info("Starting Gazebo world {}.".format(world))
-        self.start_gazebo(world)
+        self.start_gazebo(world, show_gzclient)
         time.sleep(5)
 
         # Now start Betaflight and connect
@@ -133,8 +135,9 @@ class Betaloop:
         logger.info("Starting the transmitter...")
         self.start_transmitter(transmitter)
 
-        logger.info("Starting video receiver {}".format(vidrecv))
-        self.start_video_receiver(vidrecv)
+        if not show_gzclient:
+            logger.info("Starting video receiver {}".format(vidrecv))
+            self.start_video_receiver(vidrecv)
 
         # Keep it up so we can kill with ctrl + c
         while True:
@@ -148,7 +151,7 @@ if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("config.txt")
     gazebo_assets_home = config["Betaloop"]["AeroloopGazeboHome"]
-    world =  os.path.join(gazebo_assets_home, config["Betaloop"]["World"])
+    world =  os.path.join(gazebo_assets_home, "worlds", config["Betaloop"]["World"])
     elf = config["Betaloop"]["BetaflightElf"]
     msp_virtual_radio_home = config["Betaloop"]["MspVirtualRadioHome"]
     transmitter = os.path.join(msp_virtual_radio_home, "emu-dx6-msp.js")
@@ -161,6 +164,7 @@ if __name__ == "__main__":
     parser.add_argument('--elf', type=str, default=elf)
     parser.add_argument('--transmitter', type=str, default=transmitter)
     parser.add_argument('--vidrecv', type=str, default=vidrecv)
+    parser.add_argument('--gazebo', help="Start in Gazebo, not FPV mode", action="store_true")
 
     args = parser.parse_args()
 
@@ -175,6 +179,6 @@ if __name__ == "__main__":
     """
 
     betaloop = Betaloop(args.gazebo_assets)
-    betaloop.start(args.world, args.elf, args.transmitter, args.vidrecv)
+    betaloop.start(args.world, args.elf, args.transmitter, args.vidrecv, args.gazebo)
 
 
