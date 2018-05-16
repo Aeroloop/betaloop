@@ -13,13 +13,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("betaloop")
 
 class Betaloop:
-    def __init__(self, gazebo_assets):
+    def __init__(self, gazebo_assets, default_world, elf, transmitter, vidrecv, show_gzclient):
         self.host = "localhost"
         self.gz_port = 11345
         self.gz_assets = gazebo_assets
+        self.default_world = default_world
+        self.elf = elf
+        self.transmitter = transmitter
+        self.vidrecv = vidrecv
+        self.show_gzclient = show_gzclient
 
         signal.signal(signal.SIGINT, self._shutdown)
         self.pids = []
+
+        self.load_gazebo_vars()
 
     def _get_env_var(self, name):
         """ Get an environment variable if it exists 
@@ -58,9 +65,9 @@ class Betaloop:
 
         models = os.path.join(self.gz_assets, "models")
         plugins = os.path.join(self.gz_assets, "plugins", "build")
-        worlds = os.path.join(self.gz_assets, "worlds")
+        self.world_dir = os.path.join(self.gz_assets, "worlds")
         os.environ["GAZEBO_MODEL_PATH"] = "{}:{}".format(models, os.environ["GAZEBO_MODEL_PATH"])
-        os.environ["GAZEBO_RESOURCE_PATH"] = "{}:{}".format(worlds, os.environ["GAZEBO_RESOURCE_PATH"])
+        os.environ["GAZEBO_RESOURCE_PATH"] = "{}:{}".format(self.world_dir, os.environ["GAZEBO_RESOURCE_PATH"])
         os.environ["GAZEBO_PLUGIN_PATH"] = "{}:{}".format(plugins, os.environ["GAZEBO_PLUGIN_PATH"])
 
 
@@ -83,7 +90,6 @@ class Betaloop:
             rc = p.poll()
 
     def start_gazebo(self, world, show_gzclient):
-        self.load_gazebo_vars()
         #self._start_and_block_until(["gzserver", "--verbose", world], "Connected to gazebo master")
         exe = None
         if show_gzclient:
@@ -121,27 +127,61 @@ class Betaloop:
         self.pids.append(p.pid)
 
 
-    def start(self, world, elf, transmitter, vidrecv, show_gzclient):
+    def start(self, world=None):
+        if not world:
+            world = self.default_world
         # Block until connected
         logger.info("Starting Gazebo world {}.".format(world))
-        self.start_gazebo(world, show_gzclient)
+        self.start_gazebo(world, self.show_gzclient)
         time.sleep(5)
 
         # Now start Betaflight and connect
-        logger.info("Starting Betaflight SITL at {}.".format(elf))
-        self.start_betaflight(elf)
+        logger.info("Starting Betaflight SITL at {}.".format(self.elf))
+        self.start_betaflight(self.elf)
 
         # Finally we can connect our radio
         logger.info("Starting the transmitter...")
-        self.start_transmitter(transmitter)
+        self.start_transmitter(self.transmitter)
 
-        if not show_gzclient:
-            logger.info("Starting video receiver {}".format(vidrecv))
-            self.start_video_receiver(vidrecv)
+        if not self.show_gzclient:
+            logger.info("Starting video receiver {}".format(self.vidrecv))
+            self.start_video_receiver(self.vidrecv)
 
         # Keep it up so we can kill with ctrl + c
         while True:
             time.sleep(1)
+
+    def list_worlds(self):
+        i = 0 
+        world_files = [f for f in os.listdir(self.world_dir) if f.endswith(".world")]
+        if len(world_files) == 0:
+            print("Could not find any world files, have you configured config.txt to point to the Aeroloop Gazebo?")
+            return
+
+        # Got some, display
+        for f in world_files:
+            print ("{}. {}".format(i+1, f))
+            i += 1
+
+        print("")
+        valid = False
+        while not valid:
+            selection = input("To launch a world, please enter the corresponding world number or press enter to cancel:")
+            if selection == "":
+                break
+            try:
+                n = int(selection)
+                if n > 0 and n <= len(world_files):
+                    world_file_abs = os.path.join(self.world_dir, world_files[n-1])
+                    self.start(world = world_file_abs)
+                else:
+                    print ("Your input {} is invalid".format(n))
+            except ValueError:
+                print ("Please enter an integer between 1 and {}".format(len(world_files)))
+
+
+
+
 
 if __name__ == "__main__":
     if not os.path.exists("config.txt"):
@@ -166,6 +206,8 @@ if __name__ == "__main__":
     parser.add_argument('--vidrecv', type=str, default=vidrecv)
     parser.add_argument('--gazebo', help="Start in Gazebo, not FPV mode", action="store_true")
 
+    parser.add_argument('-l', '--list', help="List available worlds", action="store_true")
+
     args = parser.parse_args()
 
     #Make sure they are set
@@ -178,7 +220,10 @@ if __name__ == "__main__":
         sys.exit()
     """
 
-    betaloop = Betaloop(args.gazebo_assets)
-    betaloop.start(args.world, args.elf, args.transmitter, args.vidrecv, args.gazebo)
+    betaloop = Betaloop(args.gazebo_assets, args.world, args.elf, args.transmitter, args.vidrecv, args.gazebo)
+    if args.list:
+        betaloop.list_worlds()
+    else:
+        betaloop.start()
 
 
