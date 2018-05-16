@@ -71,9 +71,15 @@ class Betaloop:
         os.environ["GAZEBO_PLUGIN_PATH"] = "{}:{}".format(plugins, os.environ["GAZEBO_PLUGIN_PATH"])
 
 
-    def _start_and_block_until(self, arguments, output_condition):
-        p = subprocess.Popen(arguments, shell=False, 
-                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
+    def _start_and_block_until(self, arguments, output_condition, cwd=None):
+        p = None
+        # TODO whats the default of cwd?
+        if cwd:
+            p = subprocess.Popen(arguments, shell=False, 
+                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd) 
+        else:
+            p = subprocess.Popen(arguments, shell=False, 
+                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
         self.pids.append(p.pid)
         start_time = time.time()
         while True:
@@ -101,10 +107,15 @@ class Betaloop:
         self.pids.append(p.pid)
         time.sleep(10)
 
-    def start_betaflight(self, elf):
+    def start_betaflight(self):
         # Need to wait until uart2 is bound so we cna connect our controller to it
         try:
-            self._start_and_block_until([elf], "bind port 5762 for UART2")
+            dir_path = os.path.dirname(self.elf)
+            # The bin file is dumped to whatever the current working directory is
+            # If we dont change directories this is problematic if testing multiple
+            # Betaflight builds as they will be overwriten therefore we keep them in 
+            # there corresponding elf directory
+            self._start_and_block_until([self.elf], "bind port 5762 for UART2", cwd=dir_path)
         except Exception as e:
             logger.error("Timeout starting betaflight, are you sure you have configured your FC to allow communication to UART2?")
             sys.exit()
