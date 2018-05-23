@@ -6,5 +6,5 @@ gazebo_assets=../aeroloop_gazebo
 export GAZEBO_MODEL_PATH=${gazebo_assets}/models:${GAZEBO_MODEL_PATH}
 export GAZEBO_RESOURCE_PATH=${gazebo_assets}/resources:${GAZEBO_RESOURCE_PATH}
 export GAZEBO_PLUGIN_PATH=${gazebo_assets}/plugins:${GAZEBO_PLUGIN_PATH}
-gazebo --verbose ${gazebo_assets}/worlds/betaloop_iris_arducopter_demo.world
+gazebo --verbose # ${gazebo_assets}/worlds/betaloop_iris_arducopter_demo.world
 

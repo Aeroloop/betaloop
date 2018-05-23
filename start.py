@@ -76,11 +76,14 @@ class Betaloop:
         # TODO whats the default of cwd?
         if cwd:
             p = subprocess.Popen(arguments, shell=False, 
-                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd) 
+                                         stderr=subprocess.STDOUT, cwd=cwd) 
+        #stdout=subprocess.PIPE,
         else:
             p = subprocess.Popen(arguments, shell=False, 
-                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT) 
+                                         stderr=subprocess.STDOUT) 
+        #stdout=subprocess.PIPE,
         self.pids.append(p.pid)
+        """
         start_time = time.time()
         while True:
             output = p.stdout.readline()
@@ -94,6 +97,7 @@ class Betaloop:
             if time.time() > start_time + 30:
                 raise Execption("Process start timeout")
             rc = p.poll()
+        """
 
     def start_gazebo(self, world, show_gzclient):
         #self._start_and_block_until(["gzserver", "--verbose", world], "Connected to gazebo master")
@@ -116,6 +120,7 @@ class Betaloop:
             # Betaflight builds as they will be overwriten therefore we keep them in 
             # there corresponding elf directory
             self._start_and_block_until([self.elf], "bind port 5762 for UART2", cwd=dir_path)
+            time.sleep(5)
         except Exception as e:
             logger.error("Timeout starting betaflight, are you sure you have configured your FC to allow communication to UART2?")
             sys.exit()
@@ -148,12 +153,13 @@ class Betaloop:
 
         # Now start Betaflight and connect
         logger.info("Starting Betaflight SITL at {}.".format(self.elf))
-        self.start_betaflight(self.elf)
+        self.start_betaflight()
 
-        # Finally we can connect our radio
+        # Finally we can connect our radio, after FC has started
         logger.info("Starting the transmitter...")
         self.start_transmitter(self.transmitter)
 
+        # Start up timing doesnt matter, when stream exists it will be displayed
         if not self.show_gzclient:
             logger.info("Starting video receiver {}".format(self.vidrecv))
             self.start_video_receiver(self.vidrecv)

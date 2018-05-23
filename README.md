@@ -34,3 +34,8 @@ Run the script to start the simulator,
 ```
 python3 start.py
 ```
+
+# Notes
+When Betaflight is started a .bin is created and the configuration settings are
+saved here. This is saved in the *current* directory. Be careful as this can
+currently cause a .bin to be overwritten if testing multiple builds.

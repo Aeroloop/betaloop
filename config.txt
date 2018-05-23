@@ -1,7 +1,7 @@
 [Betaloop]
-BetaflightElf =
-Vidrecv = 
-AeroloopGazeboHome = ../
-MspVirtualRadioHome = ../
-World = betaloop_iris_arducopter_demo.world 
+BetaflightElf =/home/wil/workspace/neuroflight/obj/main/neuroflight_SITL.elf
+Vidrecv =/home/wil/workspace/aeroloop/vidrecv/build/VidRecv 
+AeroloopGazeboHome =/home/wil/workspace/aeroloop/aeroloop_gazebo
+MspVirtualRadioHome =/home/wil/workspace/aeroloop/msp_virtualradio
+World =betaloop_iris_arducopter_demo.world 
 
