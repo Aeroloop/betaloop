@@ -39,3 +39,20 @@ python3 start.py
 When Betaflight is started a .bin is created and the configuration settings are
 saved here. This is saved in the *current* directory. Be careful as this can
 currently cause a .bin to be overwritten if testing multiple builds.
+
+# Motor Mapping
+This will be changed in the future so they match however current mappings are,
+
+Gazebo 
+
+Rotor 0 = Front Right
+Rotor 1 = Back Left
+Rotor 2 = Front Left
+Rotor 3 = Back Right
+
+Standard BF Mixer
+
+Rotor 0 = Back Right
+Rotor 1 = Front Right
+Rotor 2 = Back Left
+Rotor 3 = Front Left
